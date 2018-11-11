@@ -1,5 +1,6 @@
 const AV = require('leancloud-storage')
-AV.init({ appId: 'DeTUR37nflhNjfrjyOHdejeb-gzGzoHsz', appKey: 'Qq9lrFxWFSVhXEbCiodJX7kl' })
+const key = require('../key.js')
+AV.init(key)
 
 class Leancloud {
     constructor(className) {
