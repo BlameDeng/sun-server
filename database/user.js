@@ -20,9 +20,6 @@ const User = sequelize.define('user', {
     password: {
         type: Sequelize.STRING
     },
-    payword: {
-        type: Sequelize.STRING
-    },
     address: {
         type: Sequelize.STRING
     },
@@ -43,14 +40,13 @@ const User = sequelize.define('user', {
 // User.sync({ force: true })
 //     .then(() => {
 //         User.create({
-//                 username: 'blame',
+//                 username: 'test1',
 //                 nickyname: '灵魂治愈',
 //                 gender: 'male',
 //                 password: '123456',
-//                 payword: '123456',
 //                 address: '海南省文昌市&&高隆湾',
-//                 phone: '19808985650',
-//                 contract: '邓麟',
+//                 phone: '123456789',
+//                 contract: 'xxx',
 //                 cart: [{ xx: 123 }, { xx: 123 }, { xx: 123 }],
 //                 record: [{ xx: 123 }, { xx: 123 }, { xx: 123 }]
 //             })

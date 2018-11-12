@@ -66,18 +66,98 @@ const check = async (ctx, next) => {
         }
     }
 }
+
+const logout = async (ctx, next) => {
+    ctx.response.status = 200
+    if (ctx.state && ctx.state.user) {
+        ctx.response.body = { status: 'success', msg: '注销成功', isLogin: false }
+    } else {
+        ctx.response.body = { status: 'fail', msg: '用户尚未登录', isLogin: false }
+    }
+}
+
+const patchPassword = async (ctx, next) => {
+    ctx.response.status = 200
+    let { username, password, newPassword } = ctx.request.body
+    let oldPassword = encrypt(password)
+    let user = await User.findOne({ where: { username } }).then(user => user.toJSON())
+    //用户存在
+    if (user) {
+        let { password } = user
+        //密码匹配
+        if (password === oldPassword) {
+            let result = await User.update({ password: encrypt(newPassword) }, { where: { username } })
+            //修改成功
+            if (result[0]) {
+                ctx.response.body = {
+                    status: 'success',
+                    msg: '密码修改成功'
+                }
+                //修改失败
+            } else {
+                ctx.response.body = {
+                    status: 'fail',
+                    msg: '系统异常，修改失败'
+                }
+            }
+            //密码不匹配
+        } else {
+            ctx.response.body = {
+                status: 'fail',
+                msg: '密码不正确'
+            }
+        }
+        //用户不存在
+    } else {
+        ctx.response.body = {
+            status: 'fail',
+            msg: '用户不存在'
+        }
+    }
+}
+
+const patchProfile = async (ctx, next) => {
+    ctx.response.status = 200
+    let { nickyname, gender } = ctx.request.body
+    if (ctx.state && ctx.state.user) {
+        let { id } = ctx.state.user
+        let user = await User.findById(id).then(user => user.toJSON())
+        if (user) {
+            let result = await User.update({ nickyname, gender }, { where: { id } })
+            if (result[0]) {
+                let user = await User.findById(id).then(user => user.toJSON())
+                let { username, nickyname, gender, address, phone, contract, cart, record } = user
+                ctx.response.body = {
+                    status: 'success',
+                    msg: '修改成功',
+                    isLogin: true,
+                    data: { username, nickyname, gender, address, phone, contract, cart, record }
+                }
+            } else {
+                ctx.response.body = {
+                    status: 'fail',
+                    msg: '系统异常，修改失败'
+                }
+            }
+        } else {
+            ctx.response.body = {
+                status: 'fail',
+                msg: '用户不存在'
+            }
+        }
+    } else {
+        ctx.response.body = {
+            status: 'fail',
+            msg: '用户未登录',
+            isLogin: false
+        }
+    }
+}
+
 router.post('/login', login)
 router.get('/check', check)
+router.get('/logout', logout)
+router.post('/patchpassword', patchPassword)
+router.post('/patchprofile', patchProfile)
 
 module.exports = router
-
-// username: 'blame',
-// nickyname: '灵魂治愈',
-// gender: 'male',
-// password: '123456',
-// payword: '123456',
-// address: '海南省文昌市&&高隆湾',
-// phone: '19808985650',
-// contract: '邓麟',
-// cart: [ { xx: 123 }, { xx: 123 }, { xx: 123 } ],
-// record: [ { xx: 123 }, { xx: 123 }, { xx: 123 } ],
