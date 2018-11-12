@@ -11,6 +11,12 @@ const User = sequelize.define('user', {
     username: {
         type: Sequelize.STRING
     },
+    nickyname: {
+        type: Sequelize.STRING
+    },
+    gender: {
+        type: Sequelize.STRING
+    },
     password: {
         type: Sequelize.STRING
     },
@@ -25,6 +31,12 @@ const User = sequelize.define('user', {
     },
     contract: {
         type: Sequelize.STRING
+    },
+    cart: {
+        type: Sequelize.JSON
+    },
+    record: {
+        type: Sequelize.JSON
     }
 })
 
@@ -32,11 +44,15 @@ const User = sequelize.define('user', {
 //     .then(() => {
 //         User.create({
 //                 username: 'blame',
+//                 nickyname: '灵魂治愈',
+//                 gender: 'male',
 //                 password: '123456',
 //                 payword: '123456',
-//                 address: '海南省文昌市',
+//                 address: '海南省文昌市&&高隆湾',
 //                 phone: '19808985650',
-//                 contract: '邓麟'
+//                 contract: '邓麟',
+//                 cart: [{ xx: 123 }, { xx: 123 }, { xx: 123 }],
+//                 record: [{ xx: 123 }, { xx: 123 }, { xx: 123 }]
 //             })
 //             .then(res => {
 //                 console.log(res.toJSON())
