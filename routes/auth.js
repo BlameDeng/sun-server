@@ -41,27 +41,19 @@ const login = async (ctx, next) => {
 
 const check = async (ctx, next) => {
     ctx.response.status = 200
-    if (ctx.state && ctx.state.user) {
-        let user = await User.findById(ctx.state.user.id).then(user => user.toJSON())
-        if (user) {
-            let { id, username, nickyname, gender, address, detailAddress, phone, contract, cart, record } = user
-            ctx.response.body = {
-                status: 'success',
-                msg: '验证成功，用户已登录',
-                isLogin: true,
-                data: { username, nickyname, gender, address, detailAddress, phone, contract, cart, record }
-            }
-        } else {
-            ctx.response.body = {
-                status: 'fail',
-                msg: '验证失败，用户不存在',
-                isLogin: false
-            }
+    let user = await User.findById(ctx.state.user.id).then(user => user.toJSON())
+    if (user) {
+        let { id, username, nickyname, gender, address, detailAddress, phone, contract, cart, record } = user
+        ctx.response.body = {
+            status: 'success',
+            msg: '验证成功，用户已登录',
+            isLogin: true,
+            data: { username, nickyname, gender, address, detailAddress, phone, contract, cart, record }
         }
     } else {
         ctx.response.body = {
             status: 'fail',
-            msg: '验证失败，用户未登录',
+            msg: '验证失败，用户不存在',
             isLogin: false
         }
     }
@@ -69,11 +61,7 @@ const check = async (ctx, next) => {
 
 const logout = async (ctx, next) => {
     ctx.response.status = 200
-    if (ctx.state && ctx.state.user) {
-        ctx.response.body = { status: 'success', msg: '注销成功', isLogin: false }
-    } else {
-        ctx.response.body = { status: 'fail', msg: '用户尚未登录', isLogin: false }
-    }
+    ctx.response.body = { status: 'success', msg: '注销成功', isLogin: false }
 }
 
 const patchPassword = async (ctx, next) => {
@@ -119,74 +107,58 @@ const patchPassword = async (ctx, next) => {
 const patchProfile = async (ctx, next) => {
     ctx.response.status = 200
     let { nickyname, gender } = ctx.request.body
-    if (ctx.state && ctx.state.user) {
-        let { id } = ctx.state.user
-        let user = await User.findById(id).then(user => user.toJSON())
-        if (user) {
-            let result = await User.update({ nickyname, gender }, { where: { id } })
-            if (result[0]) {
-                let user = await User.findById(id).then(user => user.toJSON())
-                let { username, nickyname, gender, address, detailAddress, phone, contract, cart, record } = user
-                ctx.response.body = {
-                    status: 'success',
-                    msg: '修改成功',
-                    isLogin: true,
-                    data: { username, nickyname, gender, address, detailAddress, phone, contract, cart, record }
-                }
-            } else {
-                ctx.response.body = {
-                    status: 'fail',
-                    msg: '系统异常，修改失败'
-                }
+    let { id } = ctx.state.user
+    let user = await User.findById(id).then(user => user.toJSON())
+    if (user) {
+        let result = await User.update({ nickyname, gender }, { where: { id } })
+        if (result[0]) {
+            let user = await User.findById(id).then(user => user.toJSON())
+            let { username, nickyname, gender, address, detailAddress, phone, contract, cart, record } = user
+            ctx.response.body = {
+                status: 'success',
+                msg: '修改成功',
+                isLogin: true,
+                data: { username, nickyname, gender, address, detailAddress, phone, contract, cart, record }
             }
         } else {
             ctx.response.body = {
                 status: 'fail',
-                msg: '用户不存在'
+                msg: '系统异常，修改失败'
             }
         }
     } else {
         ctx.response.body = {
             status: 'fail',
-            msg: '用户未登录',
-            isLogin: false
+            msg: '用户不存在'
         }
     }
 }
 
 const patchAddress = async (ctx, next) => {
     ctx.response.status = 200
-    if (ctx.state && ctx.state.user) {
-        let { id } = ctx.state.user
-        let user = await User.findById(id).then(user => user.toJSON())
-        if (user) {
-            let result = await User.update({ ...ctx.request.body }, { where: { id } })
-            if (result[0]) {
-                let user = await User.findById(id).then(user => user.toJSON())
-                let { username, nickyname, gender, address, detailAddress, phone, contract, cart, record } = user
-                ctx.response.body = {
-                    status: 'success',
-                    msg: '修改成功',
-                    isLogin: true,
-                    data: { username, nickyname, gender, address, detailAddress, phone, contract, cart, record }
-                }
-            } else {
-                ctx.response.body = {
-                    status: 'fail',
-                    msg: '系统异常，修改失败'
-                }
+    let { id } = ctx.state.user
+    let user = await User.findById(id).then(user => user.toJSON())
+    if (user) {
+        let result = await User.update({ ...ctx.request.body }, { where: { id } })
+        if (result[0]) {
+            let user = await User.findById(id).then(user => user.toJSON())
+            let { username, nickyname, gender, address, detailAddress, phone, contract, cart, record } = user
+            ctx.response.body = {
+                status: 'success',
+                msg: '修改成功',
+                isLogin: true,
+                data: { username, nickyname, gender, address, detailAddress, phone, contract, cart, record }
             }
         } else {
             ctx.response.body = {
                 status: 'fail',
-                msg: '用户不存在'
+                msg: '系统异常，修改失败'
             }
         }
     } else {
         ctx.response.body = {
             status: 'fail',
-            msg: '用户未登录',
-            isLogin: false
+            msg: '用户不存在'
         }
     }
 }
