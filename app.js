@@ -41,7 +41,7 @@ app.use((ctx, next) => {
 router.use('/auth', auth.routes())
 router.use('/api', api.routes())
 
-app.use(koajwt({ secret: key.jwt_key }).unless({ path: ['/auth/login'] }))
+app.use(koajwt({ secret: key.jwt_key }).unless({ path: ['/api/newarrival','/auth/login'] }))
 app.use(koaBody({ multipart: true, strict: false }))
 app.use(router.routes())
 const port = 8989

@@ -23,6 +23,9 @@ const User = sequelize.define('user', {
     address: {
         type: Sequelize.STRING
     },
+    detailAddress: {
+        type: Sequelize.STRING
+    },
     phone: {
         type: Sequelize.STRING
     },
@@ -41,10 +44,11 @@ const User = sequelize.define('user', {
 //     .then(() => {
 //         User.create({
 //                 username: 'test1',
-//                 nickyname: '灵魂治愈',
+//                 nickyname: '',
 //                 gender: 'male',
 //                 password: '123456',
-//                 address: '海南省文昌市&&高隆湾',
+//                 address: '',
+//                 detailAddress:'',
 //                 phone: '123456789',
 //                 contract: 'xxx',
 //                 cart: [{ xx: 123 }, { xx: 123 }, { xx: 123 }],
