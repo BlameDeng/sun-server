@@ -24,6 +24,11 @@ class Leancloud {
         return instance.save()
     }
 
+    fetchById(id) {
+        let query = new AV.Query(this.className)
+        return query.get(id)
+    }
+
     fetchAll() {
         let query = new AV.Query(this.className)
         return query.find()

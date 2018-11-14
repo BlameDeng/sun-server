@@ -8,6 +8,22 @@ const User = require('../database/user.js')
 const fetchGoods = async (ctx, next) => {
     ctx.response.status = 200
     let query = ctx.request.query
+    //有id 只获取单个商品
+    if (query.id) {
+        let goods = await Goods.fetchById(query.id).then(res => {
+            let { id, createdAt, updatedAt, attributes } = res
+            return { id, createdAt, updatedAt, attributes }
+        }).catch(error => {
+            return null
+        })
+        if (goods) {
+            ctx.response.body = { status: 'success', msg: '获取商品信息成功', data: goods }
+        } else {
+            ctx.response.body = { status: 'fail', msg: '获取商品信息失败' }
+        }
+        return
+    }
+    //否则获取全部
     let allGoods = []
     await Goods.fetchAll().then(res => {
         res.forEach(item => {
@@ -15,10 +31,25 @@ const fetchGoods = async (ctx, next) => {
             allGoods.push({ id, createdAt, updatedAt, attributes })
         })
     })
+    //新到
     if (query.type === 'newArrival') {
-        ctx.response.body = { status: 'success', msg: '获取成功', data: allGoods.slice(allGoods.length - 3) }
+        ctx.response.body = { status: 'success', msg: '获取新到商品信息成功', data: allGoods.slice(allGoods.length - 3) }
+        //全部
     } else if (query.type === 'all') {
-        ctx.response.body = { status: 'success', msg: '获取成功', data: allGoods }
+        ctx.response.body = { status: 'success', msg: '获取全部商品信息成功', data: allGoods }
+        //推荐
+    } else if (query.type === 'recommend') {
+        if (query.gender === 'male' || query.gender === 'female') {
+            let recommendGoods = allGoods.filter(goods => goods.attributes.category === query.gender)
+            let length = recommendGoods.length
+            if (length > 3) {
+                //截取最后三项
+                recommendGoods = recommendGoods.slice(length - 3)
+            }
+            ctx.response.body = { status: 'success', msg: '获取推荐商品信息成功', data: recommendGoods }
+        } else {
+            ctx.response.body = { status: 'success', msg: '获取推荐商品信息成功', data: allGoods.slice(allGoods.length - 3) }
+        }
     }
 }
 
@@ -132,10 +163,6 @@ const removeGoods = async (ctx, next) => {
         }
     }
 }
-
-
-
-
 
 
 
