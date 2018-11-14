@@ -5,16 +5,21 @@ const Leancloud = require('../utils/leancloud.js')
 const Goods = new Leancloud('Goods')
 const User = require('../database/user.js')
 
-const newArrival = async (ctx, next) => {
+const fetchGoods = async (ctx, next) => {
     ctx.response.status = 200
+    let query = ctx.request.query
     let allGoods = []
     await Goods.fetchAll().then(res => {
         res.forEach(item => {
             let { id, createdAt, updatedAt, attributes } = item
             allGoods.push({ id, createdAt, updatedAt, attributes })
         })
-        ctx.response.body = { status: 'success', msg: '获取成功', data: allGoods.slice(allGoods.length - 3) }
     })
+    if (query.type === 'newArrival') {
+        ctx.response.body = { status: 'success', msg: '获取成功', data: allGoods.slice(allGoods.length - 3) }
+    } else if (query.type === 'all') {
+        ctx.response.body = { status: 'success', msg: '获取成功', data: allGoods }
+    }
 }
 
 const addToCart = async (ctx, next) => {
@@ -137,7 +142,7 @@ const removeGoods = async (ctx, next) => {
 
 
 
-router.get('/newarrival', newArrival)
+router.get('/fetchgoods', fetchGoods)
 router.post('/addtocart', addToCart)
 router.post('/changecount', changeCount)
 router.post('/removegoods', removeGoods)
