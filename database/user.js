@@ -34,9 +34,6 @@ const User = sequelize.define('user', {
     },
     cart: {
         type: Sequelize.JSON
-    },
-    record: {
-        type: Sequelize.JSON
     }
 })
 
@@ -48,11 +45,10 @@ const User = sequelize.define('user', {
 //                 gender: 'male',
 //                 password: '123456',
 //                 address: '',
-//                 detailAddress:'',
+//                 detailAddress: '',
 //                 phone: '123456789',
 //                 contract: 'xxx',
-//                 cart: [{ xx: 123 }, { xx: 123 }, { xx: 123 }],
-//                 record: [{ xx: 123 }, { xx: 123 }, { xx: 123 }]
+//                 cart: [{ xx: 123 }, { xx: 123 }, { xx: 123 }]
 //             })
 //             .then(res => {
 //                 console.log(res.toJSON())
