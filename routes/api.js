@@ -5,6 +5,7 @@ const Leancloud = require('../utils/leancloud.js')
 const Goods = new Leancloud('Goods')
 const User = require('../database/user.js')
 const Record = require('../database/record.js')
+
 async function getRecord(id) {
     return await Record.findAll({ where: { uid: id } }).then(res => {
         let results = []
@@ -268,9 +269,53 @@ const removeGoods = async (ctx, next) => {
     }
 }
 
+const delivery = async (ctx, next) => {
+    ctx.response.status = 200
+    let { id, uid } = ctx.request.body
+    let record = await Record.findById(id).then(res => res.toJSON())
+    if (record) {
+        let result = await Record.update({ status: 'toEvaluate' }, { where: { id } })
+        if (result[0]) {
+            let user = await User.findById(uid).then(user => user.toJSON())
+            let {
+                username,
+                nickyname,
+                gender,
+                address,
+                detailAddress,
+                phone,
+                contract,
+                cart
+            } = user
+            let record = await getRecord(uid)
+            ctx.response.body = {
+                status: 'success',
+                msg: '已从购物车中删除',
+                isLogin: true,
+                data: {
+                    username,
+                    nickyname,
+                    gender,
+                    address,
+                    detailAddress,
+                    phone,
+                    contract,
+                    cart,
+                    record
+                }
+            }
+        } else {
+            ctx.response.body = { status: 'fail', msg: '系统异常' }
+        }
+    } else {
+        ctx.response.body = { status: 'fail', msg: '订单不存在' }
+    }
+}
+
 router.get('/fetchgoods', fetchGoods)
 router.post('/addtocart', addToCart)
 router.post('/changecount', changeCount)
 router.post('/removegoods', removeGoods)
+router.post('/delivery', delivery)
 
 module.exports = router
