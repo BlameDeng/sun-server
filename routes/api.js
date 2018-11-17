@@ -5,9 +5,10 @@ const Leancloud = require('../utils/leancloud.js')
 const Goods = new Leancloud('Goods')
 const User = require('../database/user.js')
 const Record = require('../database/record.js')
+const Evaluation = require('../database/evaluation.js')
 
-async function getRecord(id) {
-    return await Record.findAll({ where: { uid: id } }).then(res => {
+async function getRecordByUid(uid) {
+    return await Record.findAll({ where: { uid } }).then(res => {
         let results = []
         res.forEach(item => {
             results.push(item.toJSON())
@@ -116,7 +117,7 @@ const addToCart = async (ctx, next) => {
                 contract,
                 cart
             } = user
-            let record = await getRecord(id)
+            let record = await getRecordByUid(id)
             ctx.response.body = {
                 status: 'success',
                 msg: '已成功添加至购物车',
@@ -182,7 +183,7 @@ const changeCount = async (ctx, next) => {
                 contract,
                 cart
             } = user
-            let record = await getRecord(id)
+            let record = await getRecordByUid(id)
             ctx.response.body = {
                 status: 'success',
                 msg: '已成功修改数量',
@@ -236,7 +237,7 @@ const removeGoods = async (ctx, next) => {
                 contract,
                 cart
             } = user
-            let record = await getRecord(id)
+            let record = await getRecordByUid(id)
             ctx.response.body = {
                 status: 'success',
                 msg: '已从购物车中删除',
@@ -287,10 +288,10 @@ const delivery = async (ctx, next) => {
                 contract,
                 cart
             } = user
-            let record = await getRecord(uid)
+            let record = await getRecordByUid(uid)
             ctx.response.body = {
                 status: 'success',
-                msg: '已从购物车中删除',
+                msg: '确认收货成功',
                 isLogin: true,
                 data: {
                     username,
@@ -312,10 +313,127 @@ const delivery = async (ctx, next) => {
     }
 }
 
+const evaluate = async (ctx, next) => {
+    //data:{rid,gid,uid,username,nickyname,content}
+    ctx.response.status = 200
+    let data = ctx.request.body
+    let { rid, uid } = data
+    await Evaluation.create(data).catch(error => {
+        ctx.response.body = { status: 'fail', msg: '系统异常，评论失败' }
+        return
+    })
+    let record = await Record.findById(rid).then(res => res.toJSON())
+    if (!record) {
+        ctx.response.body = { status: 'fail', msg: '该条订单记录不存在' }
+        return
+    }
+    let result = await Record.update({ status: 'done' }, { where: { id: rid } })
+    if (result[0]) {
+        let user = await User.findById(uid).then(user => user.toJSON())
+        let {
+            username,
+            nickyname,
+            gender,
+            address,
+            detailAddress,
+            phone,
+            contract,
+            cart
+        } = user
+        let record = await getRecordByUid(uid)
+        ctx.response.body = {
+            status: 'success',
+            msg: '评价商品成功',
+            isLogin: true,
+            data: {
+                username,
+                nickyname,
+                gender,
+                address,
+                detailAddress,
+                phone,
+                contract,
+                cart,
+                record
+            }
+        }
+    } else {
+        ctx.response.body = { status: 'fail', msg: '系统异常' }
+    }
+}
+
+const getRecord = async (ctx, next) => {
+    ctx.response.status = 200
+    let record = await Record.findById(ctx.request.query.id).then(record => {
+        if (record) {
+            return record.toJSON()
+        } else {
+            return false
+        }
+    })
+    if (record) {
+        ctx.response.body = { status: 'success', msg: '获取订单记录成功', data: record }
+    } else {
+        ctx.response.body = { status: 'fail', msg: '订单不存在' }
+    }
+}
+
+const goodsEvaluation = async (ctx, next) => {
+    ctx.response.status = 200
+    let gid = ctx.request.query.id
+    let evaluation = await Evaluation.findAll({ where: { gid } }).then(res => {
+        let results = []
+        res.forEach(item => {
+            results.push(item.toJSON())
+        })
+        return results
+    })
+    ctx.response.body = { status: 'success', msg: '获取商品评价列表成功', data: evaluation }
+}
+
+const destroyRecord = async (ctx, next) => {
+    ctx.response.status = 200
+    let id = ctx.request.body.id
+    let uid = ctx.state.user.id
+    await Record.destroy({ where: { id } })
+    let user = await User.findById(uid).then(user => user.toJSON())
+    let {
+        username,
+        nickyname,
+        gender,
+        address,
+        detailAddress,
+        phone,
+        contract,
+        cart
+    } = user
+    let record = await getRecordByUid(uid)
+    ctx.response.body = {
+        status: 'success',
+        msg: '删除历史订单成功',
+        isLogin: true,
+        data: {
+            username,
+            nickyname,
+            gender,
+            address,
+            detailAddress,
+            phone,
+            contract,
+            cart,
+            record
+        }
+    }
+}
+
 router.get('/fetchgoods', fetchGoods)
 router.post('/addtocart', addToCart)
 router.post('/changecount', changeCount)
 router.post('/removegoods', removeGoods)
 router.post('/delivery', delivery)
+router.post('/evaluate', evaluate)
+router.get('/record', getRecord)
+router.get('/goodsevaluation', goodsEvaluation)
+router.delete('/destroyrecord', destroyRecord)
 
 module.exports = router

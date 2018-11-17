@@ -5,12 +5,24 @@ const Router = require('koa-router')
 const cors = require('koa2-cors')
 const koajwt = require('koa-jwt')
 
+const path = require('path')
+const serve = require('koa-static')
+const staticCache = require('koa-static-cache')
+
 const key = require('./routes/key.js')
 const auth = require('./routes/auth.js')
 const api = require('./routes/api.js')
+const product = require('./routes/product')
 
 const app = new Koa()
 app.use(cors())
+
+app.use(staticCache(path.join(__dirname, './public'), {
+    maxAge: 7 * 24 * 60 * 60
+}))
+
+const staticPath = './public'
+app.use(serve(path.join(__dirname, staticPath)))
 
 const router = new Router()
 
@@ -40,11 +52,19 @@ app.use((ctx, next) => {
 
 router.use('/auth', auth.routes())
 router.use('/api', api.routes())
+router.use('/product', product.routes())
 
-app.use(koajwt({ secret: key.jwt_key }).unless({ path: ['/api/fetchgoods','/auth/login'] }))
+app.use(koajwt({ secret: key.jwt_key }).unless({
+    path: [
+        /\/product\/.+/,
+        '/api/fetchgoods',
+        '/auth/login',
+        '/api/goodsevaluation'
+    ]
+}))
 app.use(koaBody({ multipart: true, strict: false }))
 app.use(router.routes())
-const port = 8989
+const port = 8080
 app.listen(port, () => {
     console.log(`Koa2开始监听${port}端口`)
 })

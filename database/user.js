@@ -4,7 +4,7 @@ const Sequelize = require('sequelize')
 const sequelize = new Sequelize(undefined, undefined, undefined, {
     host: 'localhost',
     dialect: 'sqlite',
-    storage: path.join(__dirname, './user.sqlite')
+    storage: path.join(__dirname, './data/user.sqlite')
 })
 
 const User = sequelize.define('user', {
@@ -20,35 +20,30 @@ const User = sequelize.define('user', {
     password: {
         type: Sequelize.STRING
     },
-    address: {
-        type: Sequelize.STRING
-    },
-    detailAddress: {
-        type: Sequelize.STRING
-    },
-    phone: {
-        type: Sequelize.STRING
-    },
-    contract: {
-        type: Sequelize.STRING
-    },
-    cart: {
-        type: Sequelize.JSON
-    }
+    // address: {
+    //     type: Sequelize.STRING
+    // },
+    // detailAddress: {
+    //     type: Sequelize.STRING
+    // },
+    // phone: {
+    //     type: Sequelize.STRING
+    // },
+    // contract: {
+    //     type: Sequelize.STRING
+    // },
+    // cart: {
+    //     type: Sequelize.JSON
+    // }
 })
 
 // User.sync({ force: true })
 //     .then(() => {
 //         User.create({
-//                 username: 'test1',
+//                 username: '1',
 //                 nickyname: '',
 //                 gender: 'male',
-//                 password: '123456',
-//                 address: '',
-//                 detailAddress: '',
-//                 phone: '123456789',
-//                 contract: 'xxx',
-//                 cart: [{ xx: 123 }, { xx: 123 }, { xx: 123 }]
+//                 password: '123456'
 //             })
 //             .then(res => {
 //                 console.log(res.toJSON())
