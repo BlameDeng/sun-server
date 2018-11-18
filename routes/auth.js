@@ -4,18 +4,17 @@ const router = new Router()
 const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
 
-const User = require('../database/user.js')
+const User = require('../database/user')
+const Cart = require('../database/cart')
 const Record = require('../database/record.js')
 const key = require('./key.js')
-
-const Sequelize = require('sequelize')
-
+//加密
 function encrypt(params) {
     const hmac = crypto.createHmac('sha256', key.hmac_key)
     hmac.update(params)
     return hmac.digest('hex')
 }
-
+//签名
 function jwtSign(params) {
     return jwt.sign(params, key.jwt_key, { expiresIn: '1h' })
 }
@@ -28,6 +27,15 @@ async function getRecordByUid(uid) {
         })
         return results
     })
+}
+//获取购物车信息
+async function getCartInfo(uid) {
+    let cart = await Cart.findOne({ where: { uid } })
+    if (cart) {
+        return cart.toJSON()
+    } else {
+        return await Cart.create({ uid, products: [] }).then(cart => cart.toJSON())
+    }
 }
 //注册
 async function register(username, password) {
@@ -44,7 +52,8 @@ const login = async (ctx, next) => {
         let { id, username, nickyname, gender, password } = user.toJSON()
         if (encrypt(data.password) === password) {
             let token = jwtSign({ id, username })
-            ctx.response.body = { status: 'success', isLogin: true, token, data: { username, nickyname, gender } }
+            let cart = await getCartInfo(id)
+            ctx.response.body = { status: 'success', isLogin: true, token, data: { username, nickyname, gender, cart } }
         } else {
             ctx.response.body = { status: 'fail', msg: '密码不正确', isLogin: false }
         }
@@ -52,7 +61,8 @@ const login = async (ctx, next) => {
         let user = await register(data.username, data.password)
         let { id, username, nickyname, gender } = user
         let token = jwtSign({ id, username })
-        ctx.response.body = { status: 'success', isLogin: true, token, data: { username, nickyname, gender } }
+        let cart = await getCartInfo(id)
+        ctx.response.body = { status: 'success', isLogin: true, token, data: { username, nickyname, gender, cart } }
     }
 }
 //检查登录
@@ -60,8 +70,9 @@ const check = async (ctx, next) => {
     ctx.response.status = 200
     let user = await User.findById(ctx.state.user.id)
     if (user) {
-        let { username, nickyname, gender } = user.toJSON()
-        ctx.response.body = { status: 'success', isLogin: true, data: { username, nickyname, gender } }
+        let { id, username, nickyname, gender } = user.toJSON()
+        let cart = await getCartInfo(id)
+        ctx.response.body = { status: 'success', isLogin: true, data: { username, nickyname, gender, cart } }
     } else {
         ctx.response.body = { status: 'fail', msg: '用户不存在', isLogin: false }
     }
@@ -89,144 +100,26 @@ const changePassword = async (ctx, next) => {
     await User.update({ password: encrypt(newPassword) }, { where: { id } })
     ctx.response.body = { status: 'success' }
 }
-
-const patchProfile = async (ctx, next) => {
+//修改资料
+const changeProfile = async (ctx, next) => {
     ctx.response.status = 200
-    let { nickyname, gender } = ctx.request.body
-    let { id } = ctx.state.user
-    let user = await User.findById(id).then(user => user.toJSON())
-    if (user) {
-        let result = await User.update({ nickyname, gender }, { where: { id } })
-        if (result[0]) {
-            let user = await User.findById(id).then(user => user.toJSON())
-            let { username, nickyname, gender, address, detailAddress, phone, contract, cart } = user
-            let record = await getRecordByUid(id)
-            ctx.response.body = {
-                status: 'success',
-                msg: '修改成功',
-                isLogin: true,
-                data: { username, nickyname, gender, address, detailAddress, phone, contract, cart, record }
-            }
-        } else {
-            ctx.response.body = {
-                status: 'fail',
-                msg: '系统异常，修改失败'
-            }
-        }
-    } else {
-        ctx.response.body = {
-            status: 'fail',
-            msg: '用户不存在'
-        }
-    }
-}
-
-const patchAddress = async (ctx, next) => {
-    ctx.response.status = 200
-    let { id } = ctx.state.user
-    let user = await User.findById(id).then(user => user.toJSON())
-    if (user) {
-        let result = await User.update({ ...ctx.request.body }, { where: { id } })
-        if (result[0]) {
-            let user = await User.findById(id).then(user => user.toJSON())
-            let { username, nickyname, gender, address, detailAddress, phone, contract, cart } = user
-            let record = await getRecordByUid(id)
-            ctx.response.body = {
-                status: 'success',
-                msg: '修改成功',
-                isLogin: true,
-                data: { username, nickyname, gender, address, detailAddress, phone, contract, cart, record }
-            }
-        } else {
-            ctx.response.body = {
-                status: 'fail',
-                msg: '系统异常，修改失败'
-            }
-        }
-    } else {
-        ctx.response.body = {
-            status: 'fail',
-            msg: '用户不存在'
-        }
-    }
-}
-
-const pay = async (ctx, next) => {
-    ctx.response.status = 200
-    let data = ctx.request.body
-    //data:{order,password}
     let id = ctx.state.user.id
-    let user = await User.findById(id).then(user => user.toJSON())
+    let user = await User.findById(id)
     if (!user) {
         ctx.response.body = { status: 'fail', msg: '用户不存在' }
         return
     }
-    if (encrypt(data.password) !== user.password) {
-        ctx.response.body = { status: 'fail', msg: '密码不正确' }
-        return
-    }
-    let { cart } = user
-    let order = data.order
-    const ids = []
-    const promises = []
-    order.forEach(goods => {
-        ids.push(goods.id)
-        promises.push(Record.create({ uid: id, status: 'payed', goods }))
-    })
-    await Promise.all(promises).catch(error => {
-        ctx.response.body = { status: 'fail', msg: '系统异常' }
-        return
-    })
-    let record = await getRecordByUid(id)
-    cart = cart.filter(goods => {
-        if (ids.indexOf(goods.id) === -1) {
-            return goods
-        }
-    })
-    let result = await User.update({ cart }, { where: { id } })
-    if (result[0]) {
-        let user = await User.findById(id).then(user => user.toJSON())
-        let {
-            username,
-            nickyname,
-            gender,
-            address,
-            detailAddress,
-            phone,
-            contract,
-            cart,
-        } = user
-        ctx.response.body = {
-            status: 'success',
-            msg: '支付成功',
-            isLogin: true,
-            data: {
-                username,
-                nickyname,
-                gender,
-                address,
-                detailAddress,
-                phone,
-                contract,
-                cart,
-                record
-            }
-        }
-    } else {
-        ctx.response.body = {
-            status: 'fail',
-            msg: '系统异常，支付失败',
-            isLogin: true
-        }
-    }
+    let { nickyname, gender } = ctx.request.body
+    let { username } = user.toJSON()
+    let cart = await getCartInfo(id)
+    await User.update({ nickyname, gender }, { where: { id } })
+    ctx.response.body = { status: 'success', data: { username, nickyname, gender, cart } }
 }
 
 router.post('/login', login)
 router.get('/check', check)
 router.get('/logout', logout)
 router.patch('/changepassword', changePassword)
-router.post('/patchprofile', patchProfile)
-router.post('/patchaddress', patchAddress)
-router.post('/pay', pay)
+router.patch('/changeprofile', changeProfile)
 
 module.exports = router

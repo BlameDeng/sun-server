@@ -32,7 +32,7 @@ const singleProduct = async (ctx, next) => {
         ctx.response.body = { status: 'success', data: result.toJSON() }
     } else {
         ctx.response.status = 200
-        ctx.response.body = { status: 'fail', msg:'商品不存在' }
+        ctx.response.body = { status: 'fail', msg: '商品不存在' }
     }
 }
 

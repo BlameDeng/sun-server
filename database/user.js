@@ -2,39 +2,24 @@
 const path = require('path')
 const Sequelize = require('sequelize')
 const sequelize = new Sequelize(undefined, undefined, undefined, {
-    host: 'localhost',
-    dialect: 'sqlite',
-    storage: path.join(__dirname, './data/user.sqlite')
+  host: 'localhost',
+  dialect: 'sqlite',
+  storage: path.join(__dirname, './data/user.sqlite')
 })
 
 const User = sequelize.define('user', {
-    username: {
-        type: Sequelize.STRING
-    },
-    nickyname: {
-        type: Sequelize.STRING
-    },
-    gender: {
-        type: Sequelize.STRING
-    },
-    password: {
-        type: Sequelize.STRING
-    },
-    // address: {
-    //     type: Sequelize.STRING
-    // },
-    // detailAddress: {
-    //     type: Sequelize.STRING
-    // },
-    // phone: {
-    //     type: Sequelize.STRING
-    // },
-    // contract: {
-    //     type: Sequelize.STRING
-    // },
-    // cart: {
-    //     type: Sequelize.JSON
-    // }
+  username: {
+    type: Sequelize.STRING
+  },
+  nickyname: {
+    type: Sequelize.STRING
+  },
+  gender: {
+    type: Sequelize.STRING
+  },
+  password: {
+    type: Sequelize.STRING
+  }
 })
 
 // User.sync({ force: true })
