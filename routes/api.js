@@ -1,8 +1,6 @@
 'use strict'
 const Router = require('koa-router')
 const router = new Router()
-const Leancloud = require('../utils/leancloud.js')
-const Goods = new Leancloud('Goods')
 const User = require('../database/user.js')
 const Record = require('../database/record.js')
 const Evaluation = require('../database/evaluation.js')

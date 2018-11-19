@@ -17,7 +17,7 @@ function encrypt(params) {
 }
 //签名
 function jwtSign(params) {
-    return jwt.sign(params, key.jwt_key, { expiresIn: '1h' })
+    return jwt.sign(params, key.jwt_key, { expiresIn: '2h' })
 }
 
 async function getRecordByUid(uid) {
