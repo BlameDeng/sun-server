@@ -11,7 +11,7 @@ const staticCache = require('koa-static-cache')
 
 const key = require('./routes/key')
 const auth = require('./routes/auth')
-const api = require('./routes/api')
+// const api = require('./routes/api')
 const product = require('./routes/product')
 const cart=require('./routes/cart')
 
@@ -52,15 +52,15 @@ app.use((ctx, next) => {
 })
 
 router.use('/auth', auth.routes())
-router.use('/api', api.routes())
+// router.use('/api', api.routes())
 router.use('/product', product.routes())
+router.use('/cart',cart.routes())
 
 app.use(koajwt({ secret: key.jwt_key }).unless({
     path: [
         /\/product\/.+/,
         '/api/fetchgoods',
-        '/auth/login',
-        '/api/goodsevaluation'
+        '/auth/login'
     ]
 }))
 app.use(koaBody({ multipart: true, strict: false }))

@@ -6,6 +6,7 @@ const jwt = require('jsonwebtoken')
 
 const User = require('../database/user')
 const Cart = require('../database/cart')
+const Product = require('../database/product')
 const Record = require('../database/record.js')
 const key = require('./key.js')
 //加密
@@ -32,10 +33,27 @@ async function getRecordByUid(uid) {
 async function getCartInfo(uid) {
     let cart = await Cart.findOne({ where: { uid } })
     if (cart) {
-        return cart.toJSON()
+        return await getDetail(cart.toJSON())
     } else {
-        return await Cart.create({ uid, products: [] }).then(cart => cart.toJSON())
+        let temp = await Cart.create({ uid, products: [] }).then(cart => cart.toJSON())
+        return await getDetail(temp)
     }
+}
+async function getDetail(cart) {
+    let detail = []
+    for (let i = 0; i < cart.products.length; i++) {
+        let item = cart.products[i]
+        let product = await Product.findById(item.id).then(res => {
+            if (res) {
+                return res.toJSON()
+            } else {
+                return {}
+            }
+        })
+        detail.push({ count: item.count, ...product })
+    }
+    cart.products=detail
+    return cart
 }
 //注册
 async function register(username, password) {
