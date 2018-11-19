@@ -36,9 +36,24 @@ const singleProduct = async (ctx, next) => {
     }
 }
 
+const recommend = async (ctx, next) => {
+    ctx.response.status = 200
+    const gender = ctx.request.query.gender
+    let results = await Product.findAll()
+    let recommendProducts = []
+    if (gender === 'male' || gender === 'female') {
+        let array = results.filter(product => product.category === gender)
+        recommendProducts = array.slice(array.length - 3).map(product => product.toJSON())
+    } else {
+        recommendProducts = results.slice(results.length - 3).map(product => product.toJSON())
+    }
+    ctx.response.body = { status: 'success', data: recommendProducts }
+}
+
 router.get('/newarrival', newArrival)
 router.get('/allproducts', allProducts)
 router.get('/singleproduct', singleProduct)
+router.get('/recommend', recommend)
 
 
 module.exports = router
