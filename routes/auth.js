@@ -5,44 +5,13 @@ const crypto = require('crypto')
 const jwt = require('jsonwebtoken')
 
 const User = require('../database/user')
-const Cart = require('../database/cart')
-const Product = require('../database/product')
-const key = require('./key.js')
-//加密
-function encrypt(params) {
-    const hmac = crypto.createHmac('sha256', key.hmac_key)
-    hmac.update(params)
-    return hmac.digest('hex')
-}
+const key = require('./key')
+
+const getCartInfo = require('../middleware/getCartInfo')
+
 //签名
 function jwtSign(params) {
     return jwt.sign(params, key.jwt_key, { expiresIn: '2h' })
-}
-//获取购物车信息
-async function getCartInfo(uid) {
-    let cart = await Cart.findOne({ where: { uid } })
-    if (cart) {
-        return await getDetail(cart.toJSON())
-    } else {
-        let temp = await Cart.create({ uid, products: [] }).then(cart => cart.toJSON())
-        return await getDetail(temp)
-    }
-}
-async function getDetail(cart) {
-    let detail = []
-    for (let i = 0; i < cart.products.length; i++) {
-        let item = cart.products[i]
-        let product = await Product.findById(item.id).then(res => {
-            if (res) {
-                return res.toJSON()
-            } else {
-                return {}
-            }
-        })
-        detail.push({ count: item.count, ...product })
-    }
-    cart.products=detail
-    return cart
 }
 //注册
 async function register(username, password) {
@@ -128,5 +97,12 @@ router.get('/check', check)
 router.get('/logout', logout)
 router.patch('/changepassword', changePassword)
 router.patch('/changeprofile', changeProfile)
+
+//加密
+function encrypt(params) {
+    const hmac = crypto.createHmac('sha256', key.hmac_key)
+    hmac.update(params)
+    return hmac.digest('hex')
+}
 
 module.exports = router
