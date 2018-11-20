@@ -11,11 +11,11 @@ const staticCache = require('koa-static-cache')
 
 const key = require('./routes/key')
 const auth = require('./routes/auth')
-// const api = require('./routes/api')
 const product = require('./routes/product')
 const cart = require('./routes/cart')
 const receiver = require('./routes/receiver')
 const order = require('./routes/order')
+const evaluation=require('./routes/evaluation')
 
 const app = new Koa()
 app.use(cors())
@@ -54,11 +54,11 @@ app.use((ctx, next) => {
 })
 
 router.use('/auth', auth.routes())
-// router.use('/api', api.routes())
 router.use('/product', product.routes())
 router.use('/cart', cart.routes())
 router.use('/receiver', receiver.routes())
 router.use('/order', order.routes())
+router.use('/evaluation',evaluation.routes())
 
 app.use(koajwt({ secret: key.jwt_key }).unless({
     path: [

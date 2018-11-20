@@ -25,11 +25,22 @@ async function getUserOrders(uid) {
     })
     return orders
 }
+
 const getOrder = async (ctx, next) => {
     let uid = ctx.state.user.id
+    let id = ctx.request.query.id
     ctx.response.status = 200
-    let orders = await getUserOrders(uid)
-    ctx.response.body = { status: 'success', data: orders }
+    if (id) {
+        let order = await Order.findById(id).then(res => {
+            if (res) {
+                return res.toJSON()
+            }
+        })
+        ctx.response.body = { status: 'success', data: order }
+    } else {
+        let orders = await getUserOrders(uid)
+        ctx.response.body = { status: 'success', data: orders }
+    }
 }
 
 const payment = async (ctx, next) => {
@@ -73,9 +84,22 @@ const changeOrderStatus = async (ctx, next) => {
     }
 }
 
+const deleteOrder = async (ctx, next) => {
+    ctx.response.status = 200
+    let uid = ctx.state.user.id
+    let id = ctx.request.body.id
+    let result = await Order.destroy({ where: { id } })
+    if (result) {
+        let orders = await getUserOrders(uid)
+        ctx.response.body = { status: 'success', data: orders }
+    } else {
+        ctx.response.body = { status: 'fail', msg: '订单不存在' }
+    }
+}
 
 router.get('/getorder', getOrder)
 router.post('/payment', payment)
 router.patch('/changeorderstatus', changeOrderStatus)
+router.delete('/deleteorder',deleteOrder)
 
 module.exports = router

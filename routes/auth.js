@@ -7,7 +7,6 @@ const jwt = require('jsonwebtoken')
 const User = require('../database/user')
 const Cart = require('../database/cart')
 const Product = require('../database/product')
-const Record = require('../database/record.js')
 const key = require('./key.js')
 //加密
 function encrypt(params) {
@@ -18,16 +17,6 @@ function encrypt(params) {
 //签名
 function jwtSign(params) {
     return jwt.sign(params, key.jwt_key, { expiresIn: '2h' })
-}
-
-async function getRecordByUid(uid) {
-    return await Record.findAll({ where: { uid } }).then(res => {
-        let results = []
-        res.forEach(item => {
-            results.push(item.toJSON())
-        })
-        return results
-    })
 }
 //获取购物车信息
 async function getCartInfo(uid) {
