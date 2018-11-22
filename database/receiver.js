@@ -4,10 +4,10 @@ const Sequelize = require('sequelize')
 const sequelize = new Sequelize(undefined, undefined, undefined, {
     host: 'localhost',
     dialect: 'sqlite',
-    storage: path.join(__dirname, './data/reveiver.sqlite')
+    storage: path.join(__dirname, './data/receiver.sqlite')
 })
 
-const Reveiver = sequelize.define('reveiver', {
+const Receiver = sequelize.define('receiver', {
     uid: {
         type: Sequelize.STRING
     },
@@ -25,9 +25,9 @@ const Reveiver = sequelize.define('reveiver', {
     }
 })
 
-// Reveiver.sync({ force: true })
+// Receiver.sync({ force: true })
 //     .then(() => {
-//         Reveiver.create({
+//         Receiver.create({
 //                 uid: '333',
 //                 name: '222',
 //                 phone: '2222',
@@ -39,4 +39,4 @@ const Reveiver = sequelize.define('reveiver', {
 //             })
 //     })
 
-module.exports = Reveiver
+module.exports = Receiver
